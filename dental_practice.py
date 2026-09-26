@@ -4,6 +4,7 @@ from models.medical_appointment import MedicalAppointment
 class DentalPractice:
     client_types = ["Particular", "EPS", "Prepagada"]
     attention_types = ["Limpieza", "Calza", "Extracción", "Diagnóstico"]
+    attention_priority = ["Normal", "Urgente"]
     
     particular_cleaning= MedicalAppointment(client_types[0], attention_types[0], 80000, 60000)
     particular_calza= MedicalAppointment(client_types[0], attention_types[1], 80000, 80000)
@@ -34,20 +35,15 @@ class DentalPractice:
         prepaid_extraction,
         prepaid_diagnosis
     ]
+    
+    def get_value_by_client_type_attention_type(self, client_type, attention_type, quantity):
+            total_value = 0
+            for appointment in self.medical_appointments:
+                if appointment.client_type == client_type and appointment.attention_type == attention_type:
+                    total_value += appointment.appointment_value + (appointment.attention_value * quantity)
+                    break
+            return total_value
 
     def calculate_appointment_value(self, pacient):
-        total_value = 0
-        for appointment in self.medical_appointments:
-            if appointment.client_type == pacient.client_type:
-                total_value += appointment.appointment_value 
-                if appointment.attention_type == pacient.attention_type: 
-                    if (appointment.attention_type == self.attention_types[0] 
-                    or appointment.attention_type == self.attention_types[3]):
-                        total_value += appointment.attention_value
-                    else:
-                        total_value += appointment.attention_value * pacient.quanty
-                break                            
+        total_value = self.get_value_by_client_type_attention_type(pacient.client_type, pacient.attention_type, pacient.quantity)
         return total_value
-    
-
-   
