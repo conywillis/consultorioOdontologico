@@ -1,18 +1,17 @@
+from collections import deque
+
+
 class Pacient:
-    def __init__(self, id_pacient, name, phone, client_type, attention_type, quantity, attention_priority, date):
+    def __init__(self, id_pacient, name, phone, client_type, medical_appointments: deque):
         self.id_pacient = id_pacient
         self.name = name
         self.phone = phone
         self.client_type = client_type
-        self.attention_type = attention_type
-        self.quantity = quantity
-        self.attention_priority = attention_priority
-        self.date = date
+        self.medical_appointments = medical_appointments
+
 
     def __repr__(self):
         return (
             f"Pacient(id_pacient={self.id_pacient}, name={self.name}, "
-            f"phone={self.phone}, client_type={self.client_type}, "
-            f"attention_type={self.attention_type}, quantity={self.quantity}, "
-            f"attention_priority={self.attention_priority}, date={self.date})"
+            f"phone={self.phone}, client_type={self.client_type})"
         )
