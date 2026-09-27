@@ -56,5 +56,14 @@ class DentalPractice:
 
     def sort_pacients_by_total_value(self, pacient_list: deque):
         return sorted(pacient_list, key=lambda pacient: self.calculate_appointment_value(pacient), reverse=True)
+
+    def calculate_total_revenue(self, pacient_list: deque):
+        return sum(self.calculate_appointment_value(pacient) for pacient in pacient_list)
+
+    def count_pacients_by_attention_type(self, pacient_list: deque, attention_type):
+        return sum(
+            1 for pacient in pacient_list
+            if any(appointment.attention_type == attention_type for appointment in pacient.medical_appointments)
+        )
         
         
