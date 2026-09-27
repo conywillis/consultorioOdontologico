@@ -21,42 +21,33 @@ def run_sample_data():
 
     pacient_list.extend([
         Pacient(1053000123, "Carlos Ramirez", "3001234567", Constants.CLIENT_TYPES[0], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[0], 1, Constants.ATTENTION_PRIORITY[1], "2026-09-28"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[0], 1, Constants.ATTENTION_PRIORITY[1], "2026-09-28 09:00"),
         ])),
         Pacient(1053000456, "Laura Gomez", "3009876543", Constants.CLIENT_TYPES[1], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[1], 2, Constants.ATTENTION_PRIORITY[0], "2026-09-29"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[1], 2, Constants.ATTENTION_PRIORITY[0], "2026-09-29 10:30"),
         ])),
         Pacient(1053000789, "Andres Torres", "3005551234", Constants.CLIENT_TYPES[2], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[2], 1, Constants.ATTENTION_PRIORITY[0], "2026-09-30"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[2], 1, Constants.ATTENTION_PRIORITY[0], "2026-09-30 08:00"),
         ])),
         Pacient(1053001012, "Sofia Martinez", "3001112222", Constants.CLIENT_TYPES[0], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[3], 1, Constants.ATTENTION_PRIORITY[1], "2026-10-01"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[3], 1, Constants.ATTENTION_PRIORITY[1], "2026-10-01 11:00"),
         ])),
         Pacient(1053001314, "Juan Perez", "3003334444", Constants.CLIENT_TYPES[1], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[0], 1, Constants.ATTENTION_PRIORITY[0], "2026-10-02"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[0], 1, Constants.ATTENTION_PRIORITY[0], "2026-10-02 09:30"),
         ])),
         Pacient(1053001516, "Maria Rodriguez", "3005556666", Constants.CLIENT_TYPES[2], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[1], 1, Constants.ATTENTION_PRIORITY[1], "2026-10-03"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[1], 1, Constants.ATTENTION_PRIORITY[1], "2026-10-03 15:00"),
         ])),
         Pacient(1053001718, "Pedro Sanchez", "3007778888", Constants.CLIENT_TYPES[0], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[2], 1, Constants.ATTENTION_PRIORITY[0], "2026-10-04"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[2], 1, Constants.ATTENTION_PRIORITY[0], "2026-10-04 16:30"),
         ])),
         Pacient(1053001920, "Ana Torres", "3009990000", Constants.CLIENT_TYPES[1], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[3], 1, Constants.ATTENTION_PRIORITY[1], "2026-10-05"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[3], 1, Constants.ATTENTION_PRIORITY[1], "2026-10-05 08:30"),
         ])),
         Pacient(1053002122, "Luis Fernandez", "3002223333", Constants.CLIENT_TYPES[2], deque([
-            MedicalAppointment(Constants.ATTENTION_TYPES[0], 1, Constants.ATTENTION_PRIORITY[0], "2026-10-06"),
+            MedicalAppointment(Constants.ATTENTION_TYPES[0], 1, Constants.ATTENTION_PRIORITY[0], "2026-10-06 10:00"),
         ])),
     ])
-
-    for pacient in pacient_list:
-        print(f"Nombre: {pacient.name} con cédula número: {pacient.id_pacient}")
-        for appointment in pacient.medical_appointments:
-            total = practice.get_value_by_client_type_attention_type(
-                pacient.client_type, appointment.attention_type, appointment.quantity
-            )
-            print(f"  Cita: {appointment.attention_type} el {appointment.date} -> Valor a pagar: {total}")
-        print("-" * 60)
         
 def run_menu():
     option = "0"
@@ -123,19 +114,26 @@ def run_menu():
                 total = practice.calculate_appointment_value(pacient)
                 print(f"El usuario {pacient.name} tiene {len(pacient.medical_appointments)} citas asignadas "
                     f"y su valor total a pagar es {total}")
+                rows = []
                 for appointment in pacient.medical_appointments:
                     valor_cita = practice.get_value_by_client_type_attention_type(
                         pacient.client_type, appointment.attention_type, appointment.quantity
                     )
-                    print(f"  Cita de {appointment.attention_type} el {appointment.date}, "
-                        f"cantidad: {appointment.quantity}, prioridad: {appointment.attention_priority} -> Valor: {valor_cita}")
+                    rows.append((
+                        appointment.attention_type, appointment.date, str(appointment.quantity),
+                        appointment.attention_priority, str(valor_cita)
+                    ))
+                headers = ("Tipo de atención", "Fecha", "Cantidad", "Prioridad", "Valor")
+                custom_utils.print_table(headers, rows)
             else:
                 print(f"Paciente no encontrado: {id_pacient}")
         elif option == "5":
             sorted_pacients = practice.sort_pacients_by_total_value(pacient_list)
-            for pacient in sorted_pacients:
-                total = practice.calculate_appointment_value(pacient)
-                print(f"Nombre: {pacient.name} con cédula número: {pacient.id_pacient} valor total: {total}")
+            rows = [
+                (pacient.name, str(pacient.id_pacient), str(practice.calculate_appointment_value(pacient)))
+                for pacient in sorted_pacients
+            ]
+            custom_utils.print_table(("Nombre", "Cédula", "Valor total"), rows)
         elif option == "6":
             total_revenue = practice.calculate_total_revenue(pacient_list)
             print(f"Ingresos totales recibidos: {total_revenue}")
@@ -147,8 +145,8 @@ def run_menu():
         elif option == "9":
             sorted_pacients = practice.sort_pacients_by_total_value(pacient_list)
             print("=== Clientes ordenados por valor a pagar (desc) ===")
-            for pacient in sorted_pacients:
-                print(f"Nombre: {pacient.name} - Cédula: {pacient.id_pacient}")
+            rows = [(pacient.name, str(pacient.id_pacient)) for pacient in sorted_pacients]
+            custom_utils.print_table(("Nombre", "Cédula"), rows)
             id_pacient = custom_utils.read_valid_cedula("Ingrese la cédula del paciente a buscar en la lista ordenada")
             if was_cancelled(id_pacient):
                 continue
@@ -166,11 +164,18 @@ def run_menu():
             else:
                 print(f"Paciente no encontrado en la lista ordenada: {id_pacient}")
         elif option == "10":
-            sorted_by_date = practice.sort_pacients_by_date(pacient_list)
+            pacients_with_appointments = [p for p in pacient_list if p.medical_appointments]
+            sorted_by_date = practice.sort_pacients_by_date(pacients_with_appointments)
+            rows = []
             for pacient in sorted_by_date:
-                fecha = customUtils.earliest_date(pacient)
-                print(f"Nombre: {pacient.name} con cédula número: {pacient.id_pacient} "
-                    f"- Fecha de la cita: {fecha}")
+                sorted_appointments = sorted(pacient.medical_appointments, key=lambda appointment: appointment.date)
+                for appointment in sorted_appointments:
+                    rows.append((
+                        pacient.name, str(pacient.id_pacient), appointment.attention_type,
+                        appointment.date, str(appointment.quantity), appointment.attention_priority
+                    ))
+            headers = ("Nombre", "Cédula", "Tipo de atención", "Fecha", "Cantidad", "Prioridad")
+            custom_utils.print_table(headers, rows)
         elif option == "11":
             print("Saliendo del programa...")
             return
@@ -180,11 +185,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# Hallazgos:
-# 1. No se válida la fecha en el pasado
-# 2. La fecha no tiene la hora, debería tener la hora porque es cita médica
-# 3. No valida que la opción del menú sea correcta, si el usuario ingresa un número que no está en el menú, debería mostrar un mensaje de error y volver a mostrar el menú.
-# 4. Se están mostrando los sample data. La sample data no debería mostrarse
-# 5. El tipo de antención es case sensitive
-# 6. Cuando el paciente no tiene citas, aparece en la opcion 10 con fecha de cita 9999-99-99

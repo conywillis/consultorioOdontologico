@@ -65,16 +65,18 @@ class customUtils:
         return int(value) if value is not None else None
 
     @staticmethod
-    def read_valid_date(prompt="Ingrese la fecha (YYYY-MM-DD)"):
+    def read_valid_date(prompt="Ingrese la fecha y hora de la cita (YYYY-MM-DD HH:MM)"):
         def is_valid_date(value):
             try:
-                datetime.strptime(value, "%Y-%m-%d")
-                return True
+                parsed = datetime.strptime(value, "%Y-%m-%d %H:%M")
             except ValueError:
                 return False
+            return parsed >= datetime.now()
 
         return customUtils._read_until_valid(
-            prompt, is_valid_date, "Fecha inválida, use el formato YYYY-MM-DD (ejemplo: 2026-10-05)"
+            prompt, is_valid_date,
+            "Fecha inválida, use el formato YYYY-MM-DD HH:MM (ejemplo: 2026-10-05 14:30) "
+            "y no puede ser una fecha/hora en el pasado"
         )
 
     @staticmethod
@@ -92,16 +94,33 @@ class customUtils:
     @staticmethod
     def read_valid_choice(prompt, valid_options):
         options_text = ', '.join(valid_options)
-        return customUtils._read_until_valid(
+        options_by_lower = {option.lower(): option for option in valid_options}
+        value = customUtils._read_until_valid(
             f"{prompt} ({options_text})",
-            lambda v: v in valid_options,
+            lambda v: v.lower() in options_by_lower,
             f"Valor inválido, las opciones válidas son: {options_text}"
         )
+        return options_by_lower[value.lower()] if value is not None else None
 
     @staticmethod
     def earliest_date(pacient):
                 dates = [appointment.date for appointment in pacient.medical_appointments]
-                return min(dates) if dates else "9999-99-99"
+                return min(dates) if dates else "9999-12-31 23:59"
+
+    @staticmethod
+    def print_table(headers, rows):
+        if not rows:
+            print("No hay datos para mostrar.")
+            return
+        widths = [
+            max(len(str(headers[i])), max(len(str(row[i])) for row in rows))
+            for i in range(len(headers))
+        ]
+        row_format = "  ".join(f"{{:<{width}}}" for width in widths)
+        print(row_format.format(*headers))
+        print("  ".join("-" * width for width in widths))
+        for row in rows:
+            print(row_format.format(*row))
             
         
     def create_pacient(self, id_pacient, name, phone, client_type):
@@ -156,8 +175,13 @@ class customUtils:
                 "9. Ordenar clientes por valor y buscar uno por cédula",
                 "10. Ver pacientes ordenados por Fecha de la cita",
                 "11. Salir"]
-        print("=== Menú de Opciones ===")
-        for option in options:
-            print(option)
-        option = input("Seleccione una opción: ")
+        valid_option_numbers = {str(i) for i in range(1, len(options) + 1)}
+        while True:
+            print("=== Menú de Opciones ===")
+            for option in options:
+                print(option)
+            option = input("Seleccione una opción: ").strip()
+            if option in valid_option_numbers:
+                break
+            print(f"Opción inválida. Por favor seleccione un número entre 1 y {len(options)}.\n")
         return option
